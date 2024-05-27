@@ -36,15 +36,31 @@ model Market {
 
 model Commodity {
   id                String      @id @default(auto()) @map("_id") @db.ObjectId
-  name              String      @unique
+  name              String
+  price             String
+  promotingPrice    String?
   images            String[]
   rating            String?
   ratingAmount      String?
   description       String?
+
   market            Market?      @relation(fields: [marketId], references: [id])
   marketId          String?      @db.ObjectId
+
+  skuConfigs        SkuConfig[]
+
+  @@unique([name, marketId])
 }
 
+
+model SkuConfig {
+  id                String      @id @default(auto()) @map("_id") @db.ObjectId
+  key               String
+  value             String[]
+  defaultValue      String
+  commodity         Commodity?  @relation(fields: [commodityId], references: [id])
+  commodityId       String?     @db.ObjectId
+}
 
 
 
