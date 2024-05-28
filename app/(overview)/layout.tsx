@@ -12,6 +12,7 @@ const Page = ({children}: {children: React.ReactNode}) => {
     const [homeOpen, setHomeOpen] = useState<boolean>(false);
     const [marketOpen, setMarketOpen] = useState<boolean>(false);
     const [commodityOpen, setCommodityOpen] = useState<boolean>(false);
+    const [skuOpen, setSkuOpen] = useState<boolean>(false);
 
     const pathname = usePathname();
     const pathArray = pathname.split("/");
@@ -41,13 +42,13 @@ const Page = ({children}: {children: React.ReactNode}) => {
                 {/*主页配置*/}
                 <ListItemButton onClick={() => setHomeOpen(h => !h)}>
                     <ListItemIcon><Home/></ListItemIcon>
-                    <ListItemText>主页配置</ListItemText>
+                    <ListItemText>Homepage</ListItemText>
                     {homeOpen?<ExpandLess/> :<ExpandMore/>}
                 </ListItemButton>
                 <Collapse in={homeOpen} timeout="auto" unmountOnExit>
                     <List disablePadding>
                         <ListItemButton sx={{ pl: 4 }}>
-                            <ListItemText inset primary="轮播图配置"/>
+                            <ListItemText inset primary="loop"/>
                         </ListItemButton>
                     </List>
                 </Collapse>
@@ -56,14 +57,14 @@ const Page = ({children}: {children: React.ReactNode}) => {
                 {/*商家配置*/}
                 <ListItemButton onClick={() => setMarketOpen(m => !m)}>
                     <ListItemIcon><Store/></ListItemIcon>
-                    <ListItemText>商家配置</ListItemText>
+                    <ListItemText>Market</ListItemText>
                     {marketOpen?<ExpandLess/> :<ExpandMore/>}
                 </ListItemButton>
                 <Collapse in={marketOpen} timeout="auto" unmountOnExit>
                     <List disablePadding>
                         <Link href="/market/info">
                             <ListItemButton sx={{ pl: 4 }} selected={pathname==="/market/info"}>
-                                <ListItemText inset primary="商家信息配置" />
+                                <ListItemText inset primary="market info" />
                             </ListItemButton>
                         </Link>
                     </List>
@@ -73,14 +74,36 @@ const Page = ({children}: {children: React.ReactNode}) => {
                 {/*商品配置*/}
                 <ListItemButton onClick={() => setCommodityOpen(m => !m)}>
                     <ListItemIcon><ShoppingBag/></ListItemIcon>
-                    <ListItemText>商品配置</ListItemText>
+                    <ListItemText>Commodity</ListItemText>
                     {commodityOpen?<ExpandLess/> :<ExpandMore/>}
                 </ListItemButton>
                 <Collapse in={commodityOpen} timeout="auto" unmountOnExit>
                     <List disablePadding>
                         <Link href="/commodity/info">
-                            <ListItemButton sx={{ pl: 4 }} selected={pathname==="/commodityOpen/info"}>
-                                <ListItemText inset primary="商品信息配置" />
+                            <ListItemButton sx={{ pl: 4 }} selected={pathname==="/commodity/info"}>
+                                <ListItemText inset primary="commodity info" />
+                            </ListItemButton>
+                        </Link>
+                    </List>
+                </Collapse>
+
+
+                {/*sku配置*/}
+                <ListItemButton onClick={() => setSkuOpen(m => !m)}>
+                    <ListItemIcon><ShoppingBag/></ListItemIcon>
+                    <ListItemText>Sku</ListItemText>
+                    {skuOpen?<ExpandLess/> :<ExpandMore/>}
+                </ListItemButton>
+                <Collapse in={skuOpen} timeout="auto" unmountOnExit>
+                    <List disablePadding>
+                        <Link href="/sku/config">
+                            <ListItemButton sx={{ pl: 4 }} selected={pathname==="/sku/config"}>
+                                <ListItemText inset primary="sku config" />
+                            </ListItemButton>
+                        </Link>
+                        <Link href="/sku/item">
+                            <ListItemButton sx={{ pl: 4 }} selected={pathname==="/sku/item"}>
+                                <ListItemText inset primary="sku item" />
                             </ListItemButton>
                         </Link>
                     </List>

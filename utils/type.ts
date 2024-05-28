@@ -32,6 +32,40 @@ export interface CommodityType {
     market?: MarketType,
 }
 
+export interface SkuConfigType {
+    id: string,
+    key: string,
+    defaultValue: string,
+    value: string[],
+    commodityId?: string,
+    commodity?: CommodityType
+}
+
+export interface SkuItemType {
+    id: string,
+    sku: {
+        [key: string]: string,
+    },
+    price: string,
+    image?: string,
+    stock: string,
+    commodityId?: string,
+    commodity?: CommodityType
+}
+
+export interface CommodityIdType {
+    id: string,
+    name: string,
+    market: {
+        name: string,
+    },
+    skuConfigs: {
+        key: string,
+        value: string[],
+        defaultValue: string,
+    }[]
+}
+
 export interface MarketIdType {
     id: string,
     name: string,

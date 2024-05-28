@@ -1,17 +1,25 @@
 import { Button } from "@mui/material";
-import { useState } from "react";
+import {useEffect, useState } from "react";
 import {ImageInfoItem} from "@/utils/type";
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 
 
-const OptionalImageItem = ({initialUrl}: {
-    initialUrl: string;
+const OptionalImageItem = ({initialUrl, inputName}: {
+    initialUrl: string,
+    inputName: string,
 }) => {
 
     const [image, setImage] = useState<ImageInfoItem>({
         image: null,
-        imageUrl: initialUrl,
+        imageUrl: "",
     });
+
+    useEffect(() => {
+        setImage({
+            image: null,
+            imageUrl: initialUrl,
+        })
+    }, [initialUrl]);
 
 
     const handleUpload = () => {
@@ -46,7 +54,7 @@ const OptionalImageItem = ({initialUrl}: {
 
             {/*左侧按钮 选择图片*/}
             <Button component="label" variant="contained">
-                <input type="hidden" name="images"
+                <input type="hidden" name={inputName}
                        defaultValue={image.imageUrl==="pending" ? "" : image.imageUrl} />
                 <input type="file" className="opacity-0 w-1"
                        accept="image/*"
@@ -64,7 +72,7 @@ const OptionalImageItem = ({initialUrl}: {
                 (
                     <>
                         <img src={image.imageUrl} alt="logo"
-                             className="object-cover"
+                             className="max-w-20 max-h-20 object-cover"
                         />
                         <p>云端已上传</p>
                     </>
@@ -75,7 +83,7 @@ const OptionalImageItem = ({initialUrl}: {
             <div>
                 {image.image &&
                     <img src={URL.createObjectURL(image.image)} alt="logo"
-                         className="object-cover"
+                         className="max-w-20 max-h-20 object-cover"
                     />
                 }
             </div>

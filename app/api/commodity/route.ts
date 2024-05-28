@@ -41,8 +41,22 @@ export const UpdateCommoditySchema = CommoditySchema.omit({
 const GET = async (_: NextRequest) => {
     try {
         const data = await prisma.commodity.findMany({
-            include: {
-                market: true,
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                promotingPrice: true,
+                images: true,
+                rating: true,
+                ratingAmount: true,
+                description: true,
+                marketId: true,
+                market: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                }
             }
         });
         return Response.json({msg: "Success", data});
@@ -95,22 +109,23 @@ const POST = async (req: NextRequest) => {
 
         const data = await prisma.commodity.create({
             data: {
-                ...parseResult.data
+                ...parseResult.data,
+                marketId: String(marketId),
             }
         })
 
-        await prisma.market.update({
-            where: {
-                id: String(marketId),
-            },
-            data: {
-                commodities: {
-                    connect: {
-                        id: data.id,
-                    }
-                }
-            }
-        })
+        // await prisma.market.update({
+        //     where: {
+        //         id: String(marketId),
+        //     },
+        //     data: {
+        //         commodities: {
+        //             connect: {
+        //                 id: data.id,
+        //             }
+        //         }
+        //     }
+        // })
         return Response.json({msg: "Success",data});
     }
     catch (error) {

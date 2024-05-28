@@ -26,7 +26,7 @@ export const FormSchema = z.object({
 
 export const createFormSchema = FormSchema.omit({
     id: true,
-    icon: true,
+    // icon: true,
 }).partial({
     rating: true,
     ratingAmount: true,
@@ -45,7 +45,7 @@ export const createFormSchema = FormSchema.omit({
 
 export const updateFormSchema = FormSchema.omit({
     id: true,
-    icon: true,
+    // icon: true,
 }).partial({
     name: true,
     rating: true,
@@ -112,25 +112,25 @@ const POST = async (req: NextRequest) => {
 
         let dataObj = {
             ...parseResult.data,
-            icon: "",
+            // icon: "",
         };
 
         // 文件保存到本地
-        const iconFile = formData.get("icon");
-        if (!(iconFile instanceof File)) {
-            return new Response(JSON.stringify({msg: "Icon not valid"}), {
-                status: 500,
-            })
-        }
-        const suffix = iconFile.name.split('.')[iconFile.name.split('.').length - 1];
-        const arrayBuffer = await iconFile.arrayBuffer();
-        const imagePath = "./upload/market/" + uuidV4() + "." + suffix;
-        writeFileSync(imagePath, new DataView(arrayBuffer), {
-            flag: "w"
-        });
-
-        // 文件上传到cloudinary 并且存储https链接
-        dataObj.icon = await uploadImage(imagePath);
+        // const iconFile = formData.get("icon");
+        // if (!(iconFile instanceof File)) {
+        //     return new Response(JSON.stringify({msg: "Icon not valid"}), {
+        //         status: 500,
+        //     })
+        // }
+        // const suffix = iconFile.name.split('.')[iconFile.name.split('.').length - 1];
+        // const arrayBuffer = await iconFile.arrayBuffer();
+        // const imagePath = "./upload/market/" + uuidV4() + "." + suffix;
+        // writeFileSync(imagePath, new DataView(arrayBuffer), {
+        //     flag: "w"
+        // });
+        //
+        // // 文件上传到cloudinary 并且存储https链接
+        // dataObj.icon = await uploadImage(imagePath);
 
         // 数据库新增操作
         const data = await prisma.market.create({

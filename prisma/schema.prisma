@@ -48,6 +48,7 @@ model Commodity {
   marketId          String?      @db.ObjectId
 
   skuConfigs        SkuConfig[]
+  skuItems          SkuItem[]
 
   @@unique([name, marketId])
 }
@@ -58,11 +59,25 @@ model SkuConfig {
   key               String
   value             String[]
   defaultValue      String
+
   commodity         Commodity?  @relation(fields: [commodityId], references: [id])
   commodityId       String?     @db.ObjectId
+
+  @@unique([key, commodityId])
 }
 
 
+model SkuItem {
+  id                String      @id @default(auto()) @map("_id") @db.ObjectId
+  sku               Json
+  price             String
+  image             String?
+  stock             String
 
+  commodity         Commodity?  @relation(fields: [commodityId], references: [id])
+  commodityId       String?     @db.ObjectId
+
+  @@unique([sku, commodityId])
+}
 
 

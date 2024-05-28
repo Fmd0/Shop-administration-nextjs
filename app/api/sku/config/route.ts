@@ -13,14 +13,40 @@ const createSkuConfigSchema = SkuConfigSchema.omit({
     id: true,
 })
 
+export const updateSkuConfigSchema = SkuConfigSchema.omit({
+    id: true,
+}).partial({
+    key: true,
+    value: true,
+    defaultValue: true,
+})
+
 const GET = async(_: NextRequest) => {
     try {
-        const data = await prisma.skuConfig.findMany({});
+        const data = await prisma.skuConfig.findMany({
+            select: {
+                id: true,
+                key: true,
+                value: true,
+                defaultValue: true,
+                commodity: {
+                    select: {
+                        name: true,
+                        market: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    }
+                },
+                commodityId: true,
+            }
+        });
         return Response.json({msg: "success", data});
     }
     catch (error) {
         console.error(error);
-        return new Response(JSON.stringify(error), {
+        return new Response(JSON.stringify({msg: "GET skuConfig error"}), {
             status: 500,
         })
     }
@@ -63,21 +89,22 @@ const POST = async (req: NextRequest) => {
 
         const data = await prisma.skuConfig.create({
             data: {
-                ...parseResult.data
+                ...parseResult.data,
+                commodityId: String(commodityId),
             }
         })
-        await prisma.commodity.update({
-            where: {
-                id: String(commodityId),
-            },
-            data: {
-                skuConfigs: {
-                    connect: {
-                        id: data.id,
-                    }
-                }
-            }
-        })
+        // await prisma.commodity.update({
+        //     where: {
+        //         id: String(commodityId),
+        //     },
+        //     data: {
+        //         skuConfigs: {
+        //             connect: {
+        //                 id: data.id,
+        //             }
+        //         }
+        //     }
+        // })
 
         return Response.json({msg: "success", data});
 

@@ -22,10 +22,10 @@ const CommodityTable = ({handleUpdate, handleDelete}: {
                 <TableHead>
                     <TableRow className="bg-gray-600">
                         <TableCell align="center" className="text-white">
-                            {"操作"}
+                            Action
                         </TableCell>
                         <TableCell align="center" className="text-white">
-                            {"所属商家"}
+                            Market
                         </TableCell>
                         {
                             commodityType.map(k =>
@@ -44,8 +44,8 @@ const CommodityTable = ({handleUpdate, handleDelete}: {
                             }}}>
 
                             <TableCell align="center">
-                                <Button onClick={() => handleUpdate(data)}>编辑</Button>
-                                <Button onClick={() => handleDelete(data)}>删除</Button>
+                                <Button onClick={() => handleUpdate(data)}>Edit</Button>
+                                <Button onClick={() => handleDelete(data)}>Delete</Button>
                             </TableCell>
                             <TableCell align="center">
                                 {data?.market?.name||""}

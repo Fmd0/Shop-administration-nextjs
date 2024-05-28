@@ -1,13 +1,12 @@
 'use client'
 import {Alert, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import {useRef, useState } from "react";
-import CommodityCreateDialog from "@/components/(overview)/CommodityCreateDialog";
+import CommodityCreateDialog from "@/components/(overview)/commodity/CommodityCreateDialog";
 import {CommodityType} from "@/utils/type";
-import CommodityTable from "@/components/(overview)/CommodityTable";
+import CommodityTable from "@/components/(overview)/commodity/CommodityTable";
 import {mutateCommodity} from "@/hooks/useCommodity";
-import CommodityUpdateDialog from "@/components/(overview)/CommodityUpdateDialog";
+import CommodityUpdateDialog from "@/components/(overview)/commodity/CommodityUpdateDialog";
 import { v4 as uuidV4 } from 'uuid';
-import {uploadImage} from "@/utils/image";
 
 
 
@@ -24,7 +23,7 @@ const Page = () => {
     const [updateOpen, setUpdateOpen] = useState<boolean>(false);
     const [updateInfo, setUpdateInfo] = useState<CommodityType|null>(null);
     const [updateStatus, setUpdateStatus] = useState("init");
-    const [updateImages, setUpdateImages] = useState<string[]>([]);
+    const [updateImages, setUpdateImages] = useState<{key: string, value: string}[]>([]);
     const updateTimeRef = useRef(0);
 
     const [failMsg, setFailMsg] = useState<string>('');
@@ -119,7 +118,7 @@ const Page = () => {
 
     const handleClickUpdate = (data: CommodityType) => {
         setUpdateInfo(data);
-        setUpdateImages(data.images.map(_ => uuidV4()));
+        setUpdateImages(data.images.map(i => ({key: uuidV4(), value: i})));
         setUpdateOpen(true);
     }
 
@@ -131,9 +130,9 @@ const Page = () => {
 
     return (
         <>
-            <div className="relative p-4 flex justify-between">
-                <p>商品列表</p>
-                <Button variant="contained" onClick={() => setCreateOpen(true)}>新增</Button>
+            <div className="relative flex justify-between mb-4">
+                <h3 className="text-lg">Commodity List</h3>
+                <Button variant="contained" onClick={() => setCreateOpen(true)}>Add</Button>
                 <Collapse in={createStatus==="success" || deleteStatus==="success" } className="absolute top-0 left-1/2 -translate-y-[calc(100%+16px)] -translate-x-[calc(50%+32px)]">
                     <Alert severity="success">操作成功</Alert>
                 </Collapse>

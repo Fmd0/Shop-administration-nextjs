@@ -4,7 +4,7 @@ import {useState } from "react";
 import {commodityType} from "@/utils/type";
 import InfoIcon from '@mui/icons-material/Info';
 import {useMarketId} from "@/hooks/useMarketId";
-import OptionalImageItem from "@/components/(overview)/OptionalImageItem";
+import OptionalImageItem from "@/components/(overview)/commodity/OptionalImageItem";
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { v4 as uuidV4 } from 'uuid';
 
@@ -78,6 +78,7 @@ const CommodityCreateDialog = ({open, onClose, handleSubmit, createStatus, failM
                                 <div key={image} className="relative">
                                     <OptionalImageItem
                                         initialUrl={""}
+                                        inputName="images"
                                     />
                                     <CancelOutlinedIcon className="absolute cursor-pointer w-6 top-0 right-0 -translate-y-[calc(50%+4px)] translate-x-1/2" color="action"
                                                         onClick={() => setImages(images.filter(i => i !== image))}

@@ -9,7 +9,7 @@ const GET = async (_: NextRequest, {params: {id}}: {params: {id: string}}) => {
         const data = await prisma.market.findUnique({
             where: {
                 id
-            }
+            },
         });
         return Response.json({msg: "Success",data})
     }

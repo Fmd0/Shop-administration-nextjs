@@ -3,6 +3,23 @@ import prisma from "@/utils/prisma";
 import {UpdateCommoditySchema} from "@/app/api/commodity/route";
 
 
+const GET = async (_: NextRequest, {params: {id}}: { params: {id: string} }) => {
+    try {
+        const data = await prisma.commodity.findUnique({
+            where: {
+                id
+            }
+        })
+        return Response.json({msg: "Success", data});
+    }
+    catch (error) {
+        console.error(error);
+        return new Response(JSON.stringify({ msg: "GET commodity error" }), {
+            status: 500,
+        })
+    }
+}
+
 const DELETE = async (_: NextRequest, {params: {id}}: { params: {id: string} }) => {
     try {
         const data = await prisma.commodity.delete({

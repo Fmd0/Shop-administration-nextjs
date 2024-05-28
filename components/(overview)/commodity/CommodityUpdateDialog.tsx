@@ -1,9 +1,9 @@
 
 import {Alert, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
-import {Dispatch, SetStateAction, useState } from "react";
+import {Dispatch, SetStateAction } from "react";
 import {CommodityType} from "@/utils/type";
 import InfoIcon from '@mui/icons-material/Info';
-import OptionalImageItem from "@/components/(overview)/OptionalImageItem";
+import OptionalImageItem from "@/components/(overview)/commodity/OptionalImageItem";
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { v4 as uuidV4 } from 'uuid';
 
@@ -15,11 +15,9 @@ const CommodityCreateDialog = ({open, onClose, handleSubmit, updateInfo, images,
     updateInfo: CommodityType|null,
     updateStatus: string,
     failMsg: string,
-    images: string[],
-    setImages: Dispatch<SetStateAction<string[]>>,
+    images: {key: string,value: string}[],
+    setImages: Dispatch<SetStateAction<{key: string,value: string}[]>>,
 }) => {
-
-    const [initStop, setInitStop] = useState(false);
 
 
     return (
@@ -74,23 +72,17 @@ const CommodityCreateDialog = ({open, onClose, handleSubmit, updateInfo, images,
                 <DialogContent>
                     <div className="grid grid-cols-3 items-center gap-8 p-4">
                         {
-                            images.map((image, i) => (
-                                <div key={image} className="relative">
-                                    <OptionalImageItem initialUrl={initStop?"":updateInfo?.images[i]||""}/>
+                            images.map((image) => (
+                                <div key={image.key} className="relative">
+                                    <OptionalImageItem initialUrl={image.value} inputName="images"/>
                                     <CancelOutlinedIcon className="absolute cursor-pointer w-6 top-0 right-0 -translate-y-[calc(50%+4px)] translate-x-1/2" color="action"
-                                                        onClick={() => {
-                                                            setImages(images.filter(i => i !== image));
-                                                            setInitStop(true);
-                                                        }}
+                                                        onClick={() => setImages(images.filter(i => i.key !== image.key))}
                                     />
                                 </div>
                             ))
                         }
                         <Button size="large" variant="contained"
-                                onClick={() => {
-                                    setImages([...images, uuidV4()]);
-                                    setInitStop(true);
-                                }}
+                                onClick={() => setImages([...images, {key: uuidV4(), value: ""}])}
                         >
                             增加图片
                         </Button>
