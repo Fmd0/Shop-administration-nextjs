@@ -50,7 +50,7 @@ const OptionalImageItem = ({initialUrl, inputName}: {
     // console.log(image);
 
     return (
-        <div className="grid grid-cols-3 gap-8 items-center">
+        <div className="grid grid-cols-3 gap-x-8 items-center">
 
             {/*左侧按钮 选择图片*/}
             <Button component="label" variant="contained">

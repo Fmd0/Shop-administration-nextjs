@@ -1,12 +1,10 @@
 'use client'
 import {Alert, Autocomplete, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper } from "@mui/material";
-import {useMemo, useRef, useState } from "react";
+import {useRef, useState } from "react";
 import { v4 as uuidV4 } from 'uuid';
 import {useCommodityId} from "@/hooks/useCommodityId";
-import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import {CommodityIdType, SkuConfigType, SkuItemType} from "@/utils/type";
-import {mutateSkuConfig, useSkuConfig} from "@/hooks/useSkuConfig";
+import {SkuItemType} from "@/utils/type";
 import OptionalImageItem from "@/components/(overview)/commodity/OptionalImageItem";
 import {mutateSkuItem, useSkuItem} from "@/hooks/useSkuItem";
 
@@ -264,7 +262,7 @@ const Page = () => {
                             <input type="hidden" name="commodityId" defaultValue={createCommodityId}/>
                             <Autocomplete
                                 disablePortal
-                                options={commodityIdData.data.map(d => ({label:d.market.name+" "+d.name, value:d.id, config: d.skuConfigs}))}
+                                options={commodityIdData.data.map(d => ({label:d?.market?.name+" "+d?.name, value:d?.id, config: d?.skuConfigs}))}
                                 getOptionLabel={o => o.label}
                                 isOptionEqualToValue={(a,b) => a.label === b.label}
                                 size="small"

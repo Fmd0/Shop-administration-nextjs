@@ -1,11 +1,13 @@
 
-import {Alert, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
-import {Dispatch, SetStateAction } from "react";
+import {Alert, Button,
+    Checkbox, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, TextField } from "@mui/material";
+import {Dispatch, SetStateAction, useEffect, useState } from "react";
 import {CommodityType} from "@/utils/type";
 import InfoIcon from '@mui/icons-material/Info';
 import OptionalImageItem from "@/components/(overview)/commodity/OptionalImageItem";
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { v4 as uuidV4 } from 'uuid';
+import {useMarketTag} from "@/hooks/useMarketTag";
 
 
 const CommodityCreateDialog = ({open, onClose, handleSubmit, updateInfo, images, setImages, updateStatus, failMsg}: {
@@ -19,6 +21,12 @@ const CommodityCreateDialog = ({open, onClose, handleSubmit, updateInfo, images,
     setImages: Dispatch<SetStateAction<{key: string,value: string}[]>>,
 }) => {
 
+    const {data: marketTagData={msg: "", data: []}, error: marketTagError} = useMarketTag();
+    const [tagList, setTagList] = useState<string[]>([]);
+
+    useEffect(() => {
+        setTagList(marketTagData.data.find(m => m.market.id === updateInfo?.market?.id)?.tags||[]);
+    }, [updateInfo]);
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
@@ -49,7 +57,7 @@ const CommodityCreateDialog = ({open, onClose, handleSubmit, updateInfo, images,
                         {/*剩余字段*/}
                         {updateInfo&&
                             Object.entries(updateInfo).map(([k,v]) => {
-                                if(k === "id" || k === "images" || k === "marketId" || k === "market") {
+                                if(k === "id" || k === "images" || k === "marketId" || k === "market" || k === "tags") {
                                     return null;
                                 }
                                 return <TextField key={k}
@@ -65,6 +73,19 @@ const CommodityCreateDialog = ({open, onClose, handleSubmit, updateInfo, images,
                         }
                     </div>
                 </DialogContent>
+
+                {
+                    tagList.length>0 &&
+                    <DialogContent>
+                        <div className="grid grid-cols-10 gap-2 p-4">
+                            {
+                                tagList.map(t => (
+                                    <FormControlLabel key={t} control={<Checkbox defaultChecked={updateInfo?.tags?.includes(t)}/>} label={t} name="tag" value={t}/>
+                                ))
+                            }
+                        </div>
+                    </DialogContent>
+                }
 
 
                 {/*商品图片列表 可变长度*/}

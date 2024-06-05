@@ -3,21 +3,19 @@ import fetcher from "@/utils/fetcher";
 import {CommodityType} from "@/utils/type";
 
 
-const useCommodity = () => {
-    const {data, error, isLoading}: {
-        data: {msg: string, data: CommodityType[]},
+const useCommodity = (page: number, query: string) => {
+    const {data, error}: {
+        data: {msg: string, totalPages: number, data: CommodityType[]},
         error: boolean|undefined,
-        isLoading: boolean,
-    } = useSWR("/api/commodity", fetcher);
+    } = useSWR(`/api/commodity?page=${page}&query=${query}`, fetcher);
     return {
         data,
-        isLoading,
         error
     }
 }
 
-const mutateCommodity = () => {
-    mutate("/api/commodity");
+const mutateCommodity = (page: number, query: string) => {
+    mutate(`/api/commodity?page=${page}&query=${query}`);
 }
 
 export {

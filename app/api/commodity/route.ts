@@ -6,12 +6,15 @@ import z from "zod";
 const CommoditySchema = z.object({
     id: z.string(),
     name: z.string(),
-    price: z.string(),
-    promotingPrice: z.string(),
+    price: z.coerce.number(),
+    promotingPrice: z.coerce.number(),
     images: z.array(z.string()),
     rating: z.string(),
     ratingAmount: z.string(),
     description: z.string(),
+    stock: z.coerce.number(),
+    selling: z.coerce.number(),
+    tags: z.array(z.string()),
 })
 
 
@@ -23,6 +26,9 @@ const CreateCommoditySchema = CommoditySchema.omit({
     rating: true,
     ratingAmount: true,
     description: true,
+    stock: true,
+    selling: true,
+    tags: true,
 })
 
 export const UpdateCommoditySchema = CommoditySchema.omit({
@@ -35,12 +41,84 @@ export const UpdateCommoditySchema = CommoditySchema.omit({
     rating: true,
     ratingAmount: true,
     description: true,
+    stock: true,
+    selling: true,
+    tags: true,
 })
 
 
-const GET = async (_: NextRequest) => {
+const GET = async (req: NextRequest) => {
     try {
+
+        const url = new URL(req.url);
+        const searchParams = new URLSearchParams(url.search);
+
+        let page = Number(searchParams.get("page") || 1);
+        if(isNaN(page) || page<1) { page = 1; }
+        let pageSize = Number(searchParams.get("pageSize") || 6)
+        if (isNaN(pageSize) || pageSize<0) { pageSize = 6; }
+        const query = searchParams.get("query") || "";
+        const startPrice = Number(searchParams.get("startPrice")||0);
+        const endPrice = Number(searchParams.get("endPrice")||2000);
+
+        const sortByParam = searchParams.get("sortBy");
+        let orderBy = "createdAt";
+        let order = "desc";
+        if(sortByParam === "bestSelling") {
+            orderBy = "selling";
+            order = "desc";
+        }
+        else if(sortByParam === "priceDesc") {
+            orderBy = "price";
+            order = "desc";
+        }
+        else if(sortByParam === "priceAsc") {
+            orderBy = "price";
+            order = "asc";
+        }
+
+        const onSale = searchParams.get("onSale");
+        let promotingPrice: {gt?: number} = {};
+        if(onSale !== null) {
+            promotingPrice.gt = 0;
+        }
+
+        const inStock = searchParams.get("inStock");
+        let stock: {gt?: number} = {};
+        if(inStock !== null) {
+            stock.gt = 0;
+        }
+
+        const {_count} = await prisma.commodity.aggregate({
+            _count: true,
+            where: {
+                name: {
+                    contains: query,
+                    mode: "insensitive",
+                },
+                price: {
+                    gte: startPrice,
+                    lte: endPrice,
+                },
+                promotingPrice,
+                stock,
+            },
+        })
+        const totalPages = Math.ceil(_count/pageSize);
+
         const data = await prisma.commodity.findMany({
+            where: {
+                name: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+                price: {
+                    gte: startPrice,
+                    lte: endPrice,
+                },
+                promotingPrice,
+                stock,
+            },
             select: {
                 id: true,
                 name: true,
@@ -50,16 +128,29 @@ const GET = async (_: NextRequest) => {
                 rating: true,
                 ratingAmount: true,
                 description: true,
+                stock: true,
+                selling: true,
+                tags: true,
                 marketId: true,
                 market: {
                     select: {
                         id: true,
                         name: true,
+                        marketTag: {
+                            select: {
+                                tags: true,
+                            }
+                        }
                     }
                 }
+            },
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+            orderBy: {
+                [orderBy]: order,
             }
         });
-        return Response.json({msg: "Success", data});
+        return Response.json({msg: "Success", totalPages, totalAmount: _count, data});
     }
     catch (error) {
         console.log(error);
@@ -77,6 +168,8 @@ const POST = async (req: NextRequest) => {
         const formDataObj = Object.fromEntries(formData);
         // @ts-ignore
         formDataObj.images = formData.getAll("images").filter(i => i!=="");
+        // @ts-ignore
+        formDataObj.tags = formData.getAll("tag").filter(i => i!=="");
 
         const parseResult = CreateCommoditySchema.safeParse(formDataObj)
         if(!parseResult.success) {
@@ -114,18 +207,6 @@ const POST = async (req: NextRequest) => {
             }
         })
 
-        // await prisma.market.update({
-        //     where: {
-        //         id: String(marketId),
-        //     },
-        //     data: {
-        //         commodities: {
-        //             connect: {
-        //                 id: data.id,
-        //             }
-        //         }
-        //     }
-        // })
         return Response.json({msg: "Success",data});
     }
     catch (error) {

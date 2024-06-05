@@ -17,6 +17,11 @@ model Market {
   id                String      @id @default(auto()) @map("_id") @db.ObjectId
   name              String      @unique
   icon              String
+  bigLogo           String?
+  bigLogoBgColor    String?
+  bigLogoFontColor  String?
+  bigPic            String?
+  bigVideo          String?
   rating            String?
   ratingAmount      String?
   description       String?
@@ -24,6 +29,7 @@ model Market {
   email             String?
   telephone         String?
   facebook          String?
+  twitter           String?
   ins               String?
   youtube           String?
   address           String?
@@ -31,24 +37,35 @@ model Market {
   refundPolicy      String?
   shippingPolicy    String?
   commodities       Commodity[]
+  marketTag         MarketTag?
+
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 }
 
 
 model Commodity {
   id                String      @id @default(auto()) @map("_id") @db.ObjectId
   name              String
-  price             String
-  promotingPrice    String?
+  price             Float
+  promotingPrice    Float?
   images            String[]
   rating            String?
   ratingAmount      String?
   description       String?
+  stock             Float?
+  selling           Float?
+  tags              String[]
 
   market            Market?      @relation(fields: [marketId], references: [id])
   marketId          String?      @db.ObjectId
 
   skuConfigs        SkuConfig[]
   skuItems          SkuItem[]
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
   @@unique([name, marketId])
 }
@@ -81,3 +98,46 @@ model SkuItem {
 }
 
 
+model HomeBanner{
+  id                String      @id @default(auto()) @map("_id") @db.ObjectId
+  image             String?     @unique
+  logo              String?
+  isCommodity       Boolean
+  row               Row         @default(ROW0)
+  relativeId        String      @db.ObjectId @unique
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
+
+enum Row {
+  ROW0
+  ROW1
+  ROW2
+}
+
+model HomeShopStarted {
+  id                String      @id @default(auto()) @map("_id") @db.ObjectId
+  name              String      @unique
+  logo              String
+  imageLeft         String?
+  imageRight        String?
+  rating            String?
+  ratingAmount      String?
+  relativeId        String      @db.ObjectId @unique
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+}
+
+model MarketTag {
+  id                String      @id @default(auto()) @map("_id") @db.ObjectId
+  tags              String[]
+
+  market            Market      @relation(fields: [marketId], references: [id])
+  marketId          String      @db.ObjectId @unique
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}

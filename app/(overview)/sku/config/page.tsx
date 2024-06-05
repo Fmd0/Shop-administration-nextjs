@@ -252,7 +252,7 @@ const Page = () => {
                             <input type="hidden" name="commodityId" defaultValue={commodityId}/>
                             <Autocomplete
                                 disablePortal
-                                options={commodityIdData.data.map(d => ({label:d.market.name+" "+d.name,value:d.id}))}
+                                options={commodityIdData.data.map(d => ({label:d?.market?.name+" "+d?.name,value:d?.id}))}
                                 getOptionLabel={o => o.label}
                                 isOptionEqualToValue={(a,b) => a.label === b.label}
                                 size="small"

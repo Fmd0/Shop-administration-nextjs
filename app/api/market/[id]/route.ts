@@ -1,7 +1,6 @@
 import {NextRequest} from "next/server";
 import prisma from "@/utils/prisma";
 import {updateFormSchema} from "@/app/api/market/route";
-import {saveImageLocal, uploadImage} from "@/utils/image";
 
 
 const GET = async (_: NextRequest, {params: {id}}: {params: {id: string}}) => {
@@ -10,12 +9,20 @@ const GET = async (_: NextRequest, {params: {id}}: {params: {id: string}}) => {
             where: {
                 id
             },
+            include: {
+                marketTag: true,
+            }
         });
-        return Response.json({msg: "Success",data})
+        return Response.json({msg: "Success",data}, {
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Method": "GET",
+            }
+        })
     }
     catch (error) {
         console.log(error);
-        return new Response(JSON.stringify({msg: "Delete market error" }), {
+        return new Response(JSON.stringify({msg: "GET market error" }), {
             status: 500,
         })
     }
@@ -37,33 +44,36 @@ const PUT = async (req: NextRequest, {params: {id}}: {params: {id: string}}) => 
         }
 
         // 手动进行查重 因为使用了图床
-        const isExist = await prisma.market.findUnique({
-            where: {
-                name: parseResult.data.name
-            }
-        });
-        if(isExist && isExist.id !== id) {
-            return new Response(JSON.stringify({msg: "Name already exists"}), {
-                status: 500,
-            })
-        }
+        // const isExist = await prisma.market.findUnique({
+        //     where: {
+        //         name: parseResult.data.name
+        //     }
+        // });
+        // if(isExist && isExist.id !== id) {
+        //     return new Response(JSON.stringify({msg: "Name already exists"}), {
+        //         status: 500,
+        //     })
+        // }
 
-        let dataObj: typeof parseResult.data & {icon ?: string} = parseResult.data;
+        let dataObj = parseResult.data;
 
-        // 文件保存到本地 因为是更新操作如果不存在字段 就不操作
-        const iconFile = formData.get("icon");
-        if(iconFile) {
-            if (!(iconFile instanceof File)) {
-                return new Response(JSON.stringify({msg: "Icon not valid"}), {
-                    status: 500,
-                })
-            }
-            if(iconFile.size !== 0) {
-                const imagePath = await saveImageLocal(iconFile);
-                // 文件上传到cloudinary 并且存储https链接
-                dataObj.icon = await uploadImage(imagePath);
-            }
-        }
+
+        // let dataObj: typeof parseResult.data & {icon ?: string} = parseResult.data;
+        //
+        // // 文件保存到本地 因为是更新操作如果不存在字段 就不操作
+        // const iconFile = formData.get("icon");
+        // if(iconFile) {
+        //     if (!(iconFile instanceof File)) {
+        //         return new Response(JSON.stringify({msg: "Icon not valid"}), {
+        //             status: 500,
+        //         })
+        //     }
+        //     if(iconFile.size !== 0) {
+        //         const imagePath = await saveImageLocal(iconFile);
+        //         // 文件上传到cloudinary 并且存储https链接
+        //         dataObj.icon = await uploadImage(imagePath);
+        //     }
+        // }
         // 数据库新增操作
         const data = await prisma.market.update({
             where: {

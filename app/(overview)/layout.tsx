@@ -19,13 +19,7 @@ const Page = ({children}: {children: React.ReactNode}) => {
 
     return (
         <div className="w-screen flex flex-row">
-            <List sx={{
-                width: "15%",
-                minWidth: "250px",
-                height: "100vh",
-                overflow: "auto",
-            }}
-            >
+            <List className="w-[15%]">
 
                 {/*logo*/}
                 <Link href="/">
@@ -47,9 +41,16 @@ const Page = ({children}: {children: React.ReactNode}) => {
                 </ListItemButton>
                 <Collapse in={homeOpen} timeout="auto" unmountOnExit>
                     <List disablePadding>
-                        <ListItemButton sx={{ pl: 4 }}>
-                            <ListItemText inset primary="loop"/>
-                        </ListItemButton>
+                        <Link href="/home/banner">
+                            <ListItemButton sx={{ pl: 4 }} selected={pathname==="/home/banner"}>
+                                <ListItemText inset primary="home banner" />
+                            </ListItemButton>
+                        </Link>
+                        <Link href="/home/started">
+                            <ListItemButton sx={{ pl: 4 }} selected={pathname==="/home/started"}>
+                                <ListItemText inset primary="home started" />
+                            </ListItemButton>
+                        </Link>
                     </List>
                 </Collapse>
 
@@ -65,6 +66,11 @@ const Page = ({children}: {children: React.ReactNode}) => {
                         <Link href="/market/info">
                             <ListItemButton sx={{ pl: 4 }} selected={pathname==="/market/info"}>
                                 <ListItemText inset primary="market info" />
+                            </ListItemButton>
+                        </Link>
+                        <Link href="/market/tag">
+                            <ListItemButton sx={{ pl: 4 }} selected={pathname==="/market/tag"}>
+                                <ListItemText inset primary="market tag" />
                             </ListItemButton>
                         </Link>
                     </List>
@@ -108,13 +114,10 @@ const Page = ({children}: {children: React.ReactNode}) => {
                         </Link>
                     </List>
                 </Collapse>
-
-
-
             </List>
 
 
-            <div className="flex-1 overflow-auto no-scrollbar">
+            <div className="flex-1 w-[85%]">
                 <header className="p-4">
                     <Breadcrumbs>
                         <p>Home</p>

@@ -45,6 +45,9 @@ const PUT = async (req: NextRequest, {params: {id}}: {
         const formDataObj = Object.fromEntries(formData);
         // @ts-ignore
         formDataObj.images = formData.getAll("images").filter(i => i!=="");
+        // @ts-ignore
+        formDataObj.tags = formData.getAll("tag").filter(i => i!=="");
+
 
         const parseResult = UpdateCommoditySchema.safeParse(formDataObj);
         if (!parseResult.success) {
@@ -58,9 +61,7 @@ const PUT = async (req: NextRequest, {params: {id}}: {
             where: {
                 id
             },
-            data: {
-                ...parseResult.data,
-            }
+            data: parseResult.data,
         })
         return Response.json({msg: "Success", data});
     }
@@ -75,4 +76,5 @@ const PUT = async (req: NextRequest, {params: {id}}: {
 export {
     DELETE,
     PUT,
+    GET
 }

@@ -1,86 +1,126 @@
-import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Button, Paper } from "@mui/material";
+import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Button, Paper, Pagination } from "@mui/material";
 import {useCommodity} from "@/hooks/useCommodity";
 import {commodityType, CommodityType} from "@/utils/type";
+import {Dispatch, SetStateAction } from "react";
 
 
-const CommodityTable = ({handleUpdate, handleDelete}: {
+const CommodityTable = ({handleUpdate, handleDelete, page, setPage, query}: {
     handleUpdate: (data: CommodityType) => void,
     handleDelete: (data: CommodityType) => void,
+    page: number,
+    setPage: Dispatch<SetStateAction<number>>,
+    query: string,
 }) => {
 
-    const {data={msg:"", data:[]}, error} = useCommodity();
+
+    const {data={msg:"", totalPages: 1, data:[]}, error} =
+        useCommodity(page, query);
 
     if(error) {
         return null;
     }
 
+
     // console.log(data);
 
     return (
-        <TableContainer component={Paper}>
-            <Table className="text-nowrap">
-                <TableHead>
-                    <TableRow className="bg-gray-600">
-                        <TableCell align="center" className="text-white">
-                            Action
-                        </TableCell>
-                        <TableCell align="center" className="text-white">
-                            Market
-                        </TableCell>
-                        {
-                            commodityType.map(k =>
-                                <TableCell key={k} align="center" className="text-white">
-                                    {k}
-                                </TableCell>
-                            )
-                        }
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {data.data.length!==0 && data.data.map((data) => (
-                        <TableRow key={data.name} sx={{
-                            '&:nth-of-type(odd)': {
-                                backgroundColor: "rgba(0, 0, 0, 0.04)",
-                            }}}>
-
-                            <TableCell align="center">
-                                <Button onClick={() => handleUpdate(data)}>Edit</Button>
-                                <Button onClick={() => handleDelete(data)}>Delete</Button>
+        <>
+            <TableContainer component={Paper}>
+                <Table className="text-nowrap">
+                    <TableHead>
+                        <TableRow className="bg-gray-600">
+                            <TableCell align="center" className="text-white">
+                                Action
                             </TableCell>
-                            <TableCell align="center">
-                                {data?.market?.name||""}
+                            <TableCell align="center" className="text-white">
+                                Market
                             </TableCell>
-
                             {
-                                Object.entries(data).map(([k,v]) => {
-                                    // console.log(k, v);
-                                    if (k === "id" || k === "marketId" || k === "market") {
-                                        return null;
-                                    } else if (k === "images") {
-                                        return (
-                                            <TableCell key={k} align="left">
-                                                <div className="flex gap-2">
-                                                    {
-                                                        v.map((vm: string) => (
-                                                            <img src={vm} key={vm} alt="icon" className="w-12 object-cover"/>
-                                                        ))
-                                                    }
-                                                </div>
-                                            </TableCell>)
-                                    }
-                                    return (
-                                        <TableCell key={k} align="center" >
-                                            {
-                                                v&&(v.length>20 ? `${v.slice(0, 20)}...` : v)
-                                            }
-                                        </TableCell>)
-                                })
+                                commodityType.map(k =>
+                                    <TableCell key={k} align="center" className="text-white">
+                                        {k}
+                                    </TableCell>
+                                )
                             }
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                        {data.data.length !== 0 && data.data.map((data) => (
+                            <TableRow key={data.name} sx={{
+                                '&:nth-of-type(odd)': {
+                                    backgroundColor: "rgba(0, 0, 0, 0.04)",
+                                }
+                            }}>
+
+                                <TableCell align="center">
+                                    <Button onClick={() => handleUpdate(data)}>Edit</Button>
+                                    <Button onClick={() => handleDelete(data)}>Delete</Button>
+                                </TableCell>
+                                <TableCell align="center">
+                                    {data?.market?.name || ""}
+                                </TableCell>
+
+                                {
+                                    Object.entries(data).map(([k, v]) => {
+
+                                        if (k === "marketId" || k === "market") {
+                                            return null;
+                                        }
+
+                                        if (k === "id") {
+                                            return <TableCell key={k} align="center">{v}</TableCell>
+                                        }
+
+                                        if(k === "tags") {
+                                            return <TableCell key={k} align="center">
+                                                {JSON.stringify(v).length>20
+                                                    ?`${JSON.stringify(v).slice(0,20)}...`
+                                                    :JSON.stringify(v)}
+                                            </TableCell>
+                                        }
+
+                                        if (k === "images") {
+                                            return (
+                                                <TableCell key={k} align="center" className="">
+                                                    <div className="flex gap-2">
+                                                        {
+                                                            v.map((vm: string) => (
+                                                                <img src={vm} key={vm} alt="icon"
+                                                                     className="min-w-12 min-h-12 w-12 h-12 object-cover"/>
+                                                            ))
+                                                        }
+                                                    </div>
+                                                </TableCell>)
+                                        }
+
+
+                                        return (
+                                            <TableCell key={k} align="center">
+                                                {
+                                                    v && (v.length > 20 ? `${v.slice(0, 20)}...` : v)
+                                                }
+                                            </TableCell>)
+                                    })
+                                }
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <div className="flex justify-end">
+                <Pagination count={data.totalPages}
+                            color="primary"
+                            size="medium"
+                            className="mt-2"
+                            page={page}
+                            onChange={(_, value) => {
+                                setPage(value)
+                                console.log("value", value);
+                            }}
+                />
+            </div>
+        </>
+
     )
 }
 

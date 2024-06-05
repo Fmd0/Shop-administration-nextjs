@@ -1,14 +1,16 @@
 import {NextRequest} from "next/server";
-import {writeFileSync} from "node:fs";
-import { v4 as uuidV4 } from 'uuid';
 import prisma from "@/utils/prisma";
 import z from "zod";
-import {uploadImage} from "@/utils/image";
 
 export const FormSchema = z.object({
     id: z.string(),
     name: z.union([z.string().min(3), z.literal('')]),
     icon: z.union([z.string().url(), z.literal('')]),
+    bigLogo: z.union([z.string().url(), z.literal('')]),
+    bigLogoBgColor: z.string(),
+    bigLogoFontColor: z.string(),
+    bigPic: z.union([z.string().url(), z.literal('')]),
+    bigVideo: z.union([z.string().url(), z.literal('')]),
     rating: z.union([z.string(), z.literal('')]),
     ratingAmount: z.union([z.string(), z.literal('')]),
     description: z.union([z.string(), z.literal('')]),
@@ -16,6 +18,7 @@ export const FormSchema = z.object({
     email: z.union([z.string().email(), z.literal('')]),
     telephone: z.union([z.string(), z.literal('')]),
     facebook: z.union([z.string().url(), z.literal('')]),
+    twitter: z.union([z.string().url(), z.literal('')]),
     ins: z.union([z.string().url(), z.literal('')]),
     youtube: z.union([z.string().url(), z.literal('')]),
     address: z.union([z.string(), z.literal('')]),
@@ -28,6 +31,11 @@ export const createFormSchema = FormSchema.omit({
     id: true,
     // icon: true,
 }).partial({
+    bigLogo: true,
+    bigLogoBgColor: true,
+    bigLogoFontColor: true,
+    bigPic: true,
+    bigVideo: true,
     rating: true,
     ratingAmount: true,
     description: true,
@@ -35,6 +43,7 @@ export const createFormSchema = FormSchema.omit({
     email: true,
     telephone: true,
     facebook: true,
+    twitter: true,
     ins: true,
     youtube: true,
     address: true,
@@ -48,6 +57,12 @@ export const updateFormSchema = FormSchema.omit({
     // icon: true,
 }).partial({
     name: true,
+    icon: true,
+    bigLogo: true,
+    bigLogoBgColor: true,
+    bigLogoFontColor: true,
+    bigPic: true,
+    bigVideo: true,
     rating: true,
     ratingAmount: true,
     description: true,
@@ -55,6 +70,7 @@ export const updateFormSchema = FormSchema.omit({
     email: true,
     telephone: true,
     facebook: true,
+    twitter: true,
     ins: true,
     youtube: true,
     address: true,
@@ -64,11 +80,47 @@ export const updateFormSchema = FormSchema.omit({
 })
 
 
-const GET = async () => {
+const GET = async (req: Request) => {
     try {
-        const data = await prisma.market.findMany({});
+
+        const url = new URL(req.url);
+        const searchParams = new URLSearchParams(url.search);
+
+        let page = Number(searchParams.get("page") || 1);
+        if(isNaN(page) || page<1) { page = 1; }
+        const query = searchParams.get("query") || "";
+        let pageSize = Number(searchParams.get("pageSize") || 6);
+        if (isNaN(pageSize) || pageSize<0) { pageSize = 6; }
+
+        const {_count} = await prisma.market.aggregate({
+            _count: true,
+            where: {
+                name: {
+                    contains: query,
+                    mode: "insensitive"
+                }
+            }
+        })
+        const totalPages = Math.ceil(_count/pageSize);
+
+        const data = await prisma.market.findMany({
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+            where: {
+                name: {
+                    contains: query,
+                    mode: "insensitive"
+                }
+            },
+            orderBy: {
+                createdAt: "desc"
+            },
+        });
+
+
         return Response.json({
             msg: "Success",
+            totalPages,
             data
         });
     }

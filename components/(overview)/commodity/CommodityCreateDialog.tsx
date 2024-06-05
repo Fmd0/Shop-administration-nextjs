@@ -1,5 +1,6 @@
 
-import {Alert, Autocomplete, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import {Alert, Autocomplete, Button, Checkbox, Collapse, Dialog, DialogActions, DialogContent, DialogTitle,
+    FormControlLabel, TextField } from "@mui/material";
 import {useState } from "react";
 import {commodityType} from "@/utils/type";
 import InfoIcon from '@mui/icons-material/Info';
@@ -7,6 +8,7 @@ import {useMarketId} from "@/hooks/useMarketId";
 import OptionalImageItem from "@/components/(overview)/commodity/OptionalImageItem";
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { v4 as uuidV4 } from 'uuid';
+import {useMarketTag} from "@/hooks/useMarketTag";
 
 
 const CommodityCreateDialog = ({open, onClose, handleSubmit, createStatus, failMsg}: {
@@ -18,21 +20,21 @@ const CommodityCreateDialog = ({open, onClose, handleSubmit, createStatus, failM
 }) => {
 
     const {data={msg:"",data:[]}, error} = useMarketId();
+    const {data: marketTagData={msg: "", data: []}, error: marketTagError} = useMarketTag();
     const [market, setMarket] = useState('');
     const [images, setImages] = useState<string[]>([]);
+    const [tagList, setTagList] = useState<string[]>([]);
 
-    if(error) {
+    if(error|| marketTagError) {
         return null;
     }
-
-    // console.log(data);
-
 
     return (
         <Dialog open={open} onClose={() => {
             onClose();
             setTimeout(() => {
-                setImages([])
+                setImages([]);
+                setTagList([]);
             }, 250)
         }} fullWidth maxWidth="lg">
             <form action={handleSubmit} className="relative">
@@ -54,6 +56,7 @@ const CommodityCreateDialog = ({open, onClose, handleSubmit, createStatus, failM
                             size="small"
                             onChange={(_,value) => {
                                 setMarket(value?.value||"");
+                                setTagList(marketTagData.data.find(d => d.market.id === value?.value)?.tags||[]);
                             }}
                             renderInput={(params) => <TextField required {...params} label="Market name" />}
                         />
@@ -62,7 +65,19 @@ const CommodityCreateDialog = ({open, onClose, handleSubmit, createStatus, failM
                         {/*剩余字段*/}
                         {
                             commodityType.map(c => (
-                                 c==="images"?null:<TextField key={c} variant="outlined" size="small" name={c} required={c==="name"||c==="price"} label={c} id={c}/>
+                                 c==="id"||c==="images"||c==="tags"?null:<TextField key={c} variant="outlined" size="small" name={c} required={c==="name"||c==="price"} label={c} id={c}/>
+                            ))
+                        }
+
+
+                    </div>
+                </DialogContent>
+
+                <DialogContent>
+                    <div className="grid grid-cols-10 gap-2 p-4">
+                        {
+                            tagList.map(t => (
+                                <FormControlLabel key={t} control={<Checkbox/>} label={t} name="tag" value={t}/>
                             ))
                         }
                     </div>
@@ -86,9 +101,7 @@ const CommodityCreateDialog = ({open, onClose, handleSubmit, createStatus, failM
                                 </div>
                             ))
                         }
-                        <Button size="large" variant="contained"
-                                onClick={() => setImages([...images, uuidV4()])}
-                        >
+                        <Button size="large" variant="contained" onClick={() => setImages([...images, uuidV4()])}>
                             增加图片
                         </Button>
                     </div>

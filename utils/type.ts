@@ -4,6 +4,11 @@ export interface MarketType {
     id: string,
     name: string,
     icon: string,
+    bigLogo?: string,
+    bigLogoBgColor?: string,
+    bigLogoFontColor?: string,
+    bigPic?: string,
+    bigVideo?: string,
     rating?: string,
     ratingAmount?: string,
     description?: string,
@@ -11,23 +16,29 @@ export interface MarketType {
     email?: string,
     telephone?: string,
     facebook?: string,
+    twitter?: string,
     ins?: string,
     youtube?: string,
     address?: string,
     privacyPolicy?: string,
     refundPolicy?: string,
     shippingPolicy?: string,
+
+    marketTag?: MarketTagType
 }
 
 export interface CommodityType {
     id: string,
     name: string,
-    price: string,
-    promotingPrice?: string,
+    price: number,
+    promotingPrice?: number,
     images: string[],
     rating?: string,
     ratingAmount?: string,
     description?: string,
+    stock?: number,
+    selling?: number,
+    tags?: string[],
     marketId?: string,
     market?: MarketType,
 }
@@ -66,6 +77,35 @@ export interface CommodityIdType {
     }[]
 }
 
+export interface HomeBannerType {
+    id: string,
+    image: string,
+    logo?: string,
+    isCommodity: boolean,
+    row: "ROW0"|"ROW1"|"ROW2",
+    relativeId: string,
+}
+
+export interface HomeShopStartedType {
+    id: string,
+    name: string,
+    logo: string,
+    imageLeft?: string,
+    imageRight?: string,
+    rating?: string,
+    ratingAmount?: string,
+    relativeId: string,
+}
+
+export interface MarketTagType {
+    id: string,
+    tags: string[],
+    market: {
+        id: string,
+        name: string,
+    }
+}
+
 export interface MarketIdType {
     id: string,
     name: string,
@@ -77,6 +117,7 @@ export interface ImageInfoItem {
 }
 
 export const commodityType = [
+    "id",
     "name",
     "price",
     "promotingPrice",
@@ -84,4 +125,7 @@ export const commodityType = [
     "rating",
     "ratingAmount",
     "description",
+    "stock",
+    "selling",
+    "tags",
 ]

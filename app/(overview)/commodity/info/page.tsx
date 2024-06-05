@@ -1,5 +1,5 @@
 'use client'
-import {Alert, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import {Alert, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import {useRef, useState } from "react";
 import CommodityCreateDialog from "@/components/(overview)/commodity/CommodityCreateDialog";
 import {CommodityType} from "@/utils/type";
@@ -15,7 +15,6 @@ const Page = () => {
     const [createOpen, setCreateOpen] = useState(false);
     const [createStatus, setCreateStatus] = useState<string>("init");
 
-
     const [deleteOpen, setDeleteOpen] = useState<boolean>(false);
     const [deleteInfo, setDeleteInfo] = useState<CommodityType|null>(null);
     const [deleteStatus, setDeleteStatus] = useState("init");
@@ -27,8 +26,11 @@ const Page = () => {
     const updateTimeRef = useRef(0);
 
     const [failMsg, setFailMsg] = useState<string>('');
+    const [page, setPage] = useState<number>(1);
+    const [query, setQuery] = useState<string>("");
 
     const handleSubmitCreate = async (formData: FormData) => {
+        // console.log(formData.getAll("tag"));
         setCreateStatus("pending");
         fetch("/api/commodity", {
             method: "POST",
@@ -38,7 +40,7 @@ const Page = () => {
                 throw await res.json();
             }
             handleCloseCreate();
-            mutateCommodity();
+            mutateCommodity(page, query);
             setCreateStatus("success");
             setTimeout(() => {
                 setCreateStatus("init");
@@ -62,7 +64,7 @@ const Page = () => {
                 throw await res.json();
             }
             setDeleteOpen(false);
-            mutateCommodity();
+            mutateCommodity(page, query);
             setDeleteStatus("success");
             window.setTimeout(() => {
                 setDeleteStatus("init");
@@ -88,7 +90,7 @@ const Page = () => {
             if(res.status !== 200) {
                 throw await res.json();
             }
-            mutateCommodity();
+            mutateCommodity(page, query);
             setUpdateStatus("success");
             clearTimeout(updateTimeRef.current);
             updateTimeRef.current = window.setTimeout(() => {
@@ -131,12 +133,29 @@ const Page = () => {
     return (
         <>
             <div className="relative flex justify-between mb-4">
-                <h3 className="text-lg">Commodity List</h3>
-                <Button variant="contained" onClick={() => setCreateOpen(true)}>Add</Button>
-                <Collapse in={createStatus==="success" || deleteStatus==="success" } className="absolute top-0 left-1/2 -translate-y-[calc(100%+16px)] -translate-x-[calc(50%+32px)]">
+                <div className="flex items-center gap-4">
+                    <h3>Commodity list</h3>
+                    <TextField variant="outlined"
+                               label="Commodity name"
+                               size="small"
+                               value={query}
+                               onChange={(e) => {
+                                   setQuery(e.target.value);
+                                   setPage(1);
+                               }}
+                    />
+                </div>
+                <Button variant="contained" onClick={() => {
+                    setCreateOpen(true);
+
+                }}>Add</Button>
+
+                <Collapse in={createStatus === "success" || deleteStatus === "success"}
+                          className="absolute top-0 left-1/2 -translate-y-[calc(100%+16px)] -translate-x-[calc(50%+32px)]">
                     <Alert severity="success">操作成功</Alert>
                 </Collapse>
-                <Collapse in={deleteStatus==="error" } className="absolute top-0 left-1/2 -translate-y-[calc(100%+16px)] -translate-x-[calc(50%+32px)]">
+                <Collapse in={deleteStatus === "error"}
+                          className="absolute top-0 left-1/2 -translate-y-[calc(100%+16px)] -translate-x-[calc(50%+32px)]">
                     <Alert severity="error">操作失败 失败原因：{failMsg}</Alert>
                 </Collapse>
             </div>
@@ -146,10 +165,13 @@ const Page = () => {
             <CommodityTable
                 handleDelete={handleClickDelete}
                 handleUpdate={handleClickUpdate}
+                page={page}
+                setPage={setPage}
+                query={query}
             />
 
 
-            <Dialog open={deleteOpen} onClose={()=>setDeleteOpen(false)}>
+            <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
                 <DialogTitle>
                     删除商品{deleteInfo?.name}
                 </DialogTitle>
@@ -157,10 +179,11 @@ const Page = () => {
                     此举会删除商家{deleteInfo?.name}，确定继续
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={()=>setDeleteOpen(false)} disabled={deleteStatus === "pending"}>
+                    <Button onClick={() => setDeleteOpen(false)} disabled={deleteStatus === "pending"}>
                         取消
                     </Button>
-                    <Button onClick={()=>handleSubmitDelete(deleteInfo?.id||"")} disabled={deleteStatus === "pending"}>
+                    <Button onClick={() => handleSubmitDelete(deleteInfo?.id || "")}
+                            disabled={deleteStatus === "pending"}>
                         确定
                     </Button>
                 </DialogActions>
