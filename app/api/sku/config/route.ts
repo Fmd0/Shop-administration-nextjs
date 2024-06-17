@@ -21,9 +21,36 @@ export const updateSkuConfigSchema = SkuConfigSchema.omit({
     defaultValue: true,
 })
 
-const GET = async(_: NextRequest) => {
+const GET = async(req: NextRequest) => {
     try {
+
+        const searchParam = new URLSearchParams((new URL(req.url)).search);
+        const page = Number(searchParam.get("page") || 1);
+        const pageSize = Number(searchParam.get("pageSize") || 6);
+
+
+        const commodityIdParam = searchParam.get("commodityId") || "";
+        let commodityId = {};
+        if(commodityIdParam!==null && commodityIdParam !== "") {
+            commodityId = {
+                commodityId: commodityIdParam,
+            }
+        }
+
+
+        const {_count: totalAmount} = await prisma.skuConfig.aggregate({
+            _count: true,
+            where: {
+                ...commodityId
+            }
+        })
+        const totalPages = Math.ceil(totalAmount / pageSize);
+
+
         const data = await prisma.skuConfig.findMany({
+            where: {
+                ...commodityId,
+            },
             select: {
                 id: true,
                 key: true,
@@ -40,9 +67,15 @@ const GET = async(_: NextRequest) => {
                     }
                 },
                 commodityId: true,
-            }
+            },
+            orderBy: {
+                createdAt: "asc",
+            },
+            skip: (page - 1) * pageSize,
+            take: pageSize,
         });
-        return Response.json({msg: "success", data});
+
+        return Response.json({msg: "success", totalPages, totalAmount, data});
     }
     catch (error) {
         console.error(error);

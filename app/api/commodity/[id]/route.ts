@@ -5,12 +5,89 @@ import {UpdateCommoditySchema} from "@/app/api/commodity/route";
 
 const GET = async (_: NextRequest, {params: {id}}: { params: {id: string} }) => {
     try {
-        const data = await prisma.commodity.findUnique({
+        const commodity = await prisma.commodity.findUnique({
             where: {
                 id
-            }
+            },
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                promotingPrice: true,
+                images: true,
+                rating: true,
+                ratingAmount: true,
+                description: true,
+                stock: true,
+                officialLink: true,
+                market: {
+                    select: {
+                        id: true,
+                        name: true,
+                        icon: true,
+                        rating: true,
+                        ratingAmount: true,
+                        website: true,
+                        email: true,
+                        telephone: true,
+                        facebook: true,
+                        twitter: true,
+                        ins: true,
+                        youtube: true,
+                        address: true,
+                        shippingPolicy: true,
+                        refundPolicy: true,
+                    }
+                },
+                skuConfigs: {
+                    select: {
+                        key: true,
+                        value: true,
+                        defaultValue: true,
+                    }
+                },
+                skuItems: {
+                    select: {
+                        sku: true,
+                        price: true,
+                        promotingPrice: true,
+                        image: true,
+                        stock: true
+                    }
+                }
+            },
         })
-        return Response.json({msg: "Success", data});
+
+        const marketId = commodity?.market?.id||"";
+        let bestSellingCommodities = await prisma.commodity.findMany({
+            where: {
+                marketId,
+            },
+            orderBy: {
+                selling: "desc",
+            },
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                promotingPrice: true,
+                images: true,
+                rating: true,
+                ratingAmount: true,
+            },
+            take: 6
+        })
+        bestSellingCommodities = bestSellingCommodities.map(b => {
+            b.images = [b.images[0]]
+            return b;
+        });
+
+        return Response.json({msg: "Success", data: {commodity, bestSellingCommodities}}, {
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Method": "GET",
+            }
+        });
     }
     catch (error) {
         console.error(error);

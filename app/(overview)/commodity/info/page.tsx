@@ -1,12 +1,13 @@
 'use client'
-import {Alert, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import {Alert, Autocomplete, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import {useRef, useState } from "react";
 import CommodityCreateDialog from "@/components/(overview)/commodity/CommodityCreateDialog";
 import {CommodityType} from "@/utils/type";
 import CommodityTable from "@/components/(overview)/commodity/CommodityTable";
-import {mutateCommodity} from "@/hooks/useCommodity";
+import {mutateCommodity, useCommodity} from "@/hooks/useCommodity";
 import CommodityUpdateDialog from "@/components/(overview)/commodity/CommodityUpdateDialog";
 import { v4 as uuidV4 } from 'uuid';
+import {useMarketId} from "@/hooks/useMarketId";
 
 
 
@@ -29,6 +30,11 @@ const Page = () => {
     const [page, setPage] = useState<number>(1);
     const [query, setQuery] = useState<string>("");
 
+    const {data:marketIdData= {msg:"", data: []}, error: marketIdError} = useMarketId();
+    const [marketId, setMarketId] = useState<string>("");
+    const {data: commodityData={msg:"", totalPages: 1, totalAmount: 1,  data:[]}, error: commodityError} =
+        useCommodity(page, query, marketId);
+
     const handleSubmitCreate = async (formData: FormData) => {
         // console.log(formData.getAll("tag"));
         setCreateStatus("pending");
@@ -40,7 +46,7 @@ const Page = () => {
                 throw await res.json();
             }
             handleCloseCreate();
-            mutateCommodity(page, query);
+            mutateCommodity(page, query, marketId);
             setCreateStatus("success");
             setTimeout(() => {
                 setCreateStatus("init");
@@ -64,7 +70,7 @@ const Page = () => {
                 throw await res.json();
             }
             setDeleteOpen(false);
-            mutateCommodity(page, query);
+            mutateCommodity(page, query, marketId);
             setDeleteStatus("success");
             window.setTimeout(() => {
                 setDeleteStatus("init");
@@ -81,7 +87,7 @@ const Page = () => {
     }
 
     const handleSubmitUpdate = async (formData: FormData) => {
-        console.log(Object.fromEntries(formData));
+        // console.log(Object.fromEntries(formData));
         setUpdateStatus("pending");
         fetch(`/api/commodity/${updateInfo?.id}`, {
             method: "PUT",
@@ -90,7 +96,7 @@ const Page = () => {
             if(res.status !== 200) {
                 throw await res.json();
             }
-            mutateCommodity(page, query);
+            mutateCommodity(page, query, marketId);
             setUpdateStatus("success");
             clearTimeout(updateTimeRef.current);
             updateTimeRef.current = window.setTimeout(() => {
@@ -129,6 +135,10 @@ const Page = () => {
         setDeleteInfo(data);
     }
 
+    if(commodityError || marketIdError) {
+        return null;
+    }
+
 
     return (
         <>
@@ -144,6 +154,23 @@ const Page = () => {
                                    setPage(1);
                                }}
                     />
+
+                    <Autocomplete
+                        options={marketIdData.data.map(m => ({label: m.name, value: m.id}))}
+                        getOptionLabel={o => o.label}
+                        isOptionEqualToValue={(a,b) => a.label === b.label}
+                        onChange={(_, value) => {
+                            setMarketId(value?.value || "");
+                            setPage(1);
+                        }}
+                        size="small"
+                        sx={{width: "200px"}}
+                        renderInput={(params) => <TextField {...params} label="Market Name" />}
+                    />
+
+                    <p>
+                        {commodityData.totalAmount} products
+                    </p>
                 </div>
                 <Button variant="contained" onClick={() => {
                     setCreateOpen(true);
@@ -167,7 +194,7 @@ const Page = () => {
                 handleUpdate={handleClickUpdate}
                 page={page}
                 setPage={setPage}
-                query={query}
+                data={commodityData}
             />
 
 

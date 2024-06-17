@@ -14,6 +14,7 @@ const CommoditySchema = z.object({
     description: z.string(),
     stock: z.coerce.number(),
     selling: z.coerce.number(),
+    officialLink: z.string(),
     tags: z.array(z.string()),
 })
 
@@ -28,6 +29,7 @@ const CreateCommoditySchema = CommoditySchema.omit({
     description: true,
     stock: true,
     selling: true,
+    officialLink: true,
     tags: true,
 })
 
@@ -43,6 +45,7 @@ export const UpdateCommoditySchema = CommoditySchema.omit({
     description: true,
     stock: true,
     selling: true,
+    officialLink: true,
     tags: true,
 })
 
@@ -59,7 +62,7 @@ const GET = async (req: NextRequest) => {
         if (isNaN(pageSize) || pageSize<0) { pageSize = 6; }
         const query = searchParams.get("query") || "";
         const startPrice = Number(searchParams.get("startPrice")||0);
-        const endPrice = Number(searchParams.get("endPrice")||2000);
+        const endPrice = Number(searchParams.get("endPrice")||2000)*100;
 
         const sortByParam = searchParams.get("sortBy");
         let orderBy = "createdAt";
@@ -89,6 +92,25 @@ const GET = async (req: NextRequest) => {
             stock.gt = 0;
         }
 
+        const tag = searchParams.get("tag");
+        let tags = {}
+        if(tag !== null) {
+            tags = {
+                tags: {
+                    has: tag,
+                }
+            }
+        }
+
+        const marketIdParam = searchParams.get("marketId");
+        let marketId = {};
+        if(marketIdParam !== null && marketIdParam !== "") {
+            marketId = {
+                marketId: marketIdParam
+            }
+        }
+
+
         const {_count} = await prisma.commodity.aggregate({
             _count: true,
             where: {
@@ -100,6 +122,8 @@ const GET = async (req: NextRequest) => {
                     gte: startPrice,
                     lte: endPrice,
                 },
+                ...marketId,
+                ...tags,
                 promotingPrice,
                 stock,
             },
@@ -118,6 +142,8 @@ const GET = async (req: NextRequest) => {
                 },
                 promotingPrice,
                 stock,
+                ...tags,
+                ...marketId,
             },
             select: {
                 id: true,
@@ -130,6 +156,7 @@ const GET = async (req: NextRequest) => {
                 description: true,
                 stock: true,
                 selling: true,
+                officialLink: true,
                 tags: true,
                 marketId: true,
                 market: {

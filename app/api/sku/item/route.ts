@@ -5,9 +5,10 @@ import prisma from "@/utils/prisma";
 const SkuItemSchema = z.object({
     id: z.string(),
     sku: z.record(z.string(), z.string()),
-    price: z.string(),
+    price: z.coerce.number(),
+    promotingPrice: z.coerce.number(),
     image: z.string(),
-    stock: z.string(),
+    stock: z.coerce.number(),
 })
 
 
@@ -23,18 +24,45 @@ export const UpdateSkuItemSchema = SkuItemSchema.omit({
 }).partial({
     sku: true,
     price: true,
+    promotingPrice: true,
     image: true,
     stock: true,
 })
 
 
-const GET = async () => {
+const GET = async (req: Request) => {
     try {
+
+        const searchParams = new URLSearchParams((new URL(req.url)).search);
+        const page = Number(searchParams.get("page") || 1);
+        const pageSize = Number(searchParams.get("pageSize") || 6);
+
+        const commodityIdParam = searchParams.get("commodityId") || "";
+        let commodityId = {};
+        if(commodityIdParam!==null && commodityIdParam!== "") {
+            commodityId = {
+                commodityId: commodityIdParam,
+            }
+        }
+
+        const {_count: totalAmount} = await prisma.skuItem.aggregate({
+            _count: true,
+            where: {
+                ...commodityId,
+            }
+        })
+        const totalPages = Math.ceil(totalAmount / pageSize)
+
+
         const data = await prisma.skuItem.findMany({
+            where: {
+                ...commodityId,
+            },
             select: {
                 id: true,
                 sku: true,
                 price: true,
+                promotingPrice: true,
                 image: true,
                 stock: true,
                 commodityId: true,
@@ -48,9 +76,14 @@ const GET = async () => {
                         }
                     }
                 }
-            }
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+            skip: (page - 1) * pageSize,
+            take: pageSize,
         });
-        return Response.json({msg: "Success", data});
+        return Response.json({msg: "Success", totalAmount, totalPages, data});
     }
     catch (error) {
         console.log(error);

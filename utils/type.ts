@@ -38,6 +38,7 @@ export interface CommodityType {
     description?: string,
     stock?: number,
     selling?: number,
+    officialLink?: string,
     tags?: string[],
     marketId?: string,
     market?: MarketType,
@@ -57,9 +58,10 @@ export interface SkuItemType {
     sku: {
         [key: string]: string,
     },
-    price: string,
+    price: number,
+    promotingPrice: number,
     image?: string,
-    stock: string,
+    stock: number,
     commodityId?: string,
     commodity?: CommodityType
 }
@@ -106,6 +108,17 @@ export interface MarketTagType {
     }
 }
 
+export interface CommentType {
+    id: string,
+    rating: number,
+    comment: string,
+    userName: string,
+    marketId: string,
+    commodityId: string,
+    market: MarketType,
+    commodity: CommodityType,
+}
+
 export interface MarketIdType {
     id: string,
     name: string,
@@ -114,6 +127,15 @@ export interface MarketIdType {
 export interface ImageInfoItem {
     image: File|null;
     imageUrl: string;
+}
+
+export interface CategoryType {
+    id: string,
+    categoryId: number,
+    name: string,
+    children: CategoryType[],
+    parentId: string,
+    parent?: CategoryType,
 }
 
 export const commodityType = [
@@ -127,5 +149,6 @@ export const commodityType = [
     "description",
     "stock",
     "selling",
+    "officialLink",
     "tags",
 ]

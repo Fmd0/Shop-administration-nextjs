@@ -5,15 +5,10 @@ import {useRef, useState } from "react";
 import { v4 as uuidV4 } from 'uuid';
 import {useCommodityId} from "@/hooks/useCommodityId";
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import {SkuConfigType} from "@/utils/type";
+import {CommentType, SkuConfigType} from "@/utils/type";
 import {mutateSkuConfig, useSkuConfig} from "@/hooks/useSkuConfig";
+import {mutateComment, useComment} from "@/hooks/useComment";
 
-
-const skuConfigField: string[] = [
-    "key",
-    "value",
-    "defaultValue"
-]
 
 const Page = () => {
 
@@ -24,11 +19,11 @@ const Page = () => {
 
 
     const [deleteOpen, setDeleteOpen] = useState<boolean>(false);
-    const [deleteInfo, setDeleteInfo] = useState<SkuConfigType | null>(null);
+    const [deleteInfo, setDeleteInfo] = useState<CommentType | null>(null);
     const [deleteStatus, setDeleteStatus] = useState<string>("init");
 
     const [updateOpen, setUpdateOpen] = useState<boolean>(false);
-    const [updateInfo, setUpdateInfo] = useState<SkuConfigType | null>(null);
+    const [updateInfo, setUpdateInfo] = useState<CommentType | null>(null);
     const [updateStatus, setUpdateStatus] = useState("init");
     const [updateValue, setUpdateValue] = useState<{key: string, value: string}[]>([]);
     const updateTimeRef = useRef<number>(0);
@@ -39,22 +34,22 @@ const Page = () => {
     const [tableCommodityId, setTableCommodityId] = useState<string>("");
 
     const {data:commodityIdData={msg:"", data: []}, error: commodityIdError} = useCommodityId();
-    const {data:skuConfigData={msg:"", totalAmount: 1, totalPages: 1, data: []}, error} = useSkuConfig(page, tableCommodityId);
+    const {data:commentData={msg:"", totalAmount: 1, totalPages: 1, data: []}, error} = useComment(page, tableCommodityId);
 
 
-    
+
 
     const handleSubmitCreate = async (formData: FormData) => {
         // console.log(Object.fromEntries(formData));
         setCreateStatus("pending");
-        fetch("/api/sku/config", {
+        fetch("/api/comment", {
             method: "POST",
             body: formData,
         }).then(async (res) => {
             if(res.status !== 200) {
                 throw await res.json();
             }
-            mutateSkuConfig(page, tableCommodityId);
+            mutateComment(page, tableCommodityId);
             setCreateOpen(false)
             setCreateStatus("success");
             setTimeout(() => {
@@ -72,13 +67,13 @@ const Page = () => {
 
     const handleSubmitDelete = async (id: string) => {
         setDeleteStatus("pending");
-        fetch(`/api/sku/config/${id}`, {
+        fetch(`/api/comment/${id}`, {
             method: "DELETE",
         }).then(async (res) => {
             if(res.status !== 200) {
                 throw await res.json();
             }
-            mutateSkuConfig(page, tableCommodityId);
+            mutateComment(page, tableCommodityId);
             setDeleteOpen(false)
             setDeleteStatus("success");
             setTimeout(() => {
@@ -96,14 +91,14 @@ const Page = () => {
 
     const handleSubmitUpdate = async (formData: FormData) => {
         setUpdateStatus("pending");
-        fetch(`/api/sku/config/${formData.get("id")}`, {
+        fetch(`/api/comment/${formData.get("id")}`, {
             method: "PUT",
             body: formData,
         }).then(async (res) => {
             if(res.status !== 200) {
                 throw await res.json();
             }
-            mutateSkuConfig(page, tableCommodityId);
+            mutateComment(page, tableCommodityId);
             setUpdateStatus("success");
             clearTimeout(updateTimeRef.current)
             updateTimeRef.current = window.setTimeout(() => {
@@ -119,13 +114,12 @@ const Page = () => {
         })
     }
 
-    const handleClickUpdate = (data: SkuConfigType) => {
+    const handleClickUpdate = (data: CommentType) => {
         setUpdateOpen(true);
         setUpdateInfo(data);
-        setUpdateValue(data.value.map(v => ({key: uuidV4(), value: v})));
     }
 
-    const handleClickDelete = (data: SkuConfigType) => {
+    const handleClickDelete = (data: CommentType) => {
         setDeleteOpen(true);
         setDeleteInfo(data);
     }
@@ -135,13 +129,14 @@ const Page = () => {
     }
 
 
+
     return (
         <>
             <div className="relative flex justify-between mb-4">
 
                 {/*filter part*/}
                 <div className="flex items-center gap-4">
-                    <h3 className="text-lg">Sku config</h3>
+                    <h3 className="text-lg">Comment Info</h3>
                     <Autocomplete
                         className="w-[200px]"
                         options={commodityIdData.data.map(d => ({
@@ -157,7 +152,7 @@ const Page = () => {
                         }}
                         renderInput={(params) => <TextField {...params} label="Commodity name"/>}
                     />
-                    <p>{skuConfigData.totalAmount} configs</p>
+                    <p>{commentData.totalAmount} comments</p>
                 </div>
 
 
@@ -188,17 +183,20 @@ const Page = () => {
                                 Commodity
                             </TableCell>
 
-                            {
-                                skuConfigField.map(k =>
-                                    <TableCell key={k} align="center" className="text-white">
-                                        {k}
-                                    </TableCell>
-                                )
-                            }
+                            <TableCell align="center" className="text-white">
+                                rating
+                            </TableCell>
+                            <TableCell align="center" className="text-white">
+                                comment
+                            </TableCell>
+                            <TableCell align="center" className="text-white">
+                                userName
+                            </TableCell>
+
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {skuConfigData.data&&skuConfigData.data.map((data) => (
+                        {commentData.data&&commentData.data.map((data) => (
                             <TableRow key={data.id} sx={{
                                 '&:nth-of-type(odd)': {
                                     backgroundColor: "rgba(0, 0, 0, 0.04)",
@@ -210,28 +208,30 @@ const Page = () => {
                                     <Button onClick={() => handleClickDelete(data)}>Delete</Button>
                                 </TableCell>
                                 <TableCell align="center">
-                                    {data.commodity?.market?.name + " " + data.commodity?.name}
+                                    {data?.market?.name + " " + data.commodity?.name}
                                 </TableCell>
 
                                 <TableCell align="center">
-                                    {data.key || ""}
+                                    {data.rating}
                                 </TableCell>
                                 <TableCell align="center">
-                                    {JSON.stringify(data.value || "").length > 30
-                                        ? JSON.stringify(data.value || "").slice(0, 30)
-                                        : JSON.stringify(data.value || "")
+                                    {data.comment.length>20
+                                        ?`${data.comment.slice(0,20)}...`
+                                        :data.comment
                                     }
                                 </TableCell>
                                 <TableCell align="center">
-                                    {data.defaultValue || ""}
+                                    {data.userName}
                                 </TableCell>
+
+
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </TableContainer>
             <div className="flex justify-end">
-                <Pagination count={skuConfigData.totalPages}
+                <Pagination count={commentData.totalPages}
                             color="primary"
                             size="medium"
                             className="mt-2"
@@ -245,10 +245,10 @@ const Page = () => {
             {/*delete dialog*/}
             <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
                 <DialogTitle>
-                    Delete sku config key {deleteInfo?.key}
+                    Delete sku config key {deleteInfo?.comment.slice(0,20)}...
                 </DialogTitle>
                 <DialogContent>
-                    this action will delete sku config key {deleteInfo?.key}, confirm?
+                    this action will delete sku config key {deleteInfo?.comment.slice(0,20)}..., confirm?
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setDeleteOpen(false)} disabled={deleteStatus === "pending"}>
@@ -290,41 +290,14 @@ const Page = () => {
 
 
                             {/*剩余字段*/}
-                            {
-                                skuConfigField.map(c => (
-                                    c === "value" ? null :
-                                        <TextField key={c} variant="outlined" size="small" name={c} required label={c}
-                                                   id={c}/>
-                                ))
-                            }
+                            <TextField variant="outlined" size="small" name="rating" required label="rating"/>
+                            <TextField variant="outlined" size="small" name="comment" required label="comment"/>
+                            <TextField variant="outlined" size="small" name="userName" required label="userName"/>
+
                         </div>
                     </DialogContent>
 
 
-                    {/*value字段 可变长度*/}
-                    <DialogTitle>Config value</DialogTitle>
-                    <DialogContent>
-                        <div className="grid grid-cols-3 items-center gap-8 p-4">
-                            {
-                                createValue.map((value) => (
-                                    <div key={value} className="relative">
-                                        <TextField variant="outlined" className="w-[calc(100%-12px)]" size="small"
-                                                   name="value" label="value"/>
-                                        <CancelOutlinedIcon
-                                            className="absolute cursor-pointer w-6 top-0 right-0 -translate-y-[calc(50%+4px)] translate-x-1/2"
-                                            color="action"
-                                            onClick={() => setCreateValue(createValue.filter(i => i !== value))}
-                                        />
-                                    </div>
-                                ))
-                            }
-                            <Button size="large" variant="contained"
-                                    onClick={() => setCreateValue([...createValue, uuidV4()])}
-                            >
-                                Add value
-                            </Button>
-                        </div>
-                    </DialogContent>
                     <DialogActions sx={{pr: 4, pb: 4}}>
                         <Button type="submit" variant="contained"
                                 disabled={createStatus === "pending"}
@@ -351,7 +324,7 @@ const Page = () => {
                             {/* id字段*/}
                             <TextField variant="outlined"
                                        size="small"
-                                       defaultValue={updateInfo?.commodity?.market?.name + " " + updateInfo?.commodity?.name}
+                                       defaultValue={updateInfo?.market?.name + " " + updateInfo?.commodity?.name}
                                        label="commodity"
                                        id="commodity"
                                        InputProps={{
@@ -361,39 +334,19 @@ const Page = () => {
                             <input type="hidden" name="id" defaultValue={updateInfo?.id}/>
 
                             {/*剩余字段*/}
-                            <TextField variant="outlined" size="small" defaultValue={updateInfo?.key || ""} name="key"
-                                       required label="key"/>
-                            <TextField variant="outlined" size="small" defaultValue={updateInfo?.defaultValue || ""}
-                                       name="defaultValue" required label="defaultValue"/>
+                            <TextField variant="outlined" size="small" defaultValue={
+                                updateInfo?.rating!==undefined&&updateInfo?.rating!==null?updateInfo?.rating: ""
+                            } name="rating"
+                                       required label="rating"/>
+                            <TextField variant="outlined" size="small" defaultValue={updateInfo?.comment || ""}
+                                       name="comment" required label="comment"/>
+                            <TextField variant="outlined" size="small" defaultValue={updateInfo?.userName || ""}
+                                       name="userName" required label="userName"/>
 
                         </div>
                     </DialogContent>
 
 
-                    {/*value字段 可变长度*/}
-                    <DialogTitle>Config value</DialogTitle>
-                    <DialogContent>
-                        <div className="grid grid-cols-3 items-center gap-8 p-4">
-                            {
-                                updateValue.map((value) => (
-                                    <div key={value.key} className="relative">
-                                        <TextField variant="outlined" className="w-[calc(100%-12px)]"
-                                                   defaultValue={value.value} size="small" name="value" label="value"/>
-                                        <CancelOutlinedIcon
-                                            className="absolute cursor-pointer w-6 top-0 right-0 -translate-y-[calc(50%+4px)] translate-x-1/2"
-                                            color="action"
-                                            onClick={() => setUpdateValue(updateValue.filter(i => i.key !== value.key))}
-                                        />
-                                    </div>
-                                ))
-                            }
-                            <Button size="large" variant="contained"
-                                    onClick={() => setUpdateValue([...updateValue, {key: uuidV4(), value: ""}])}
-                            >
-                                Add value
-                            </Button>
-                        </div>
-                    </DialogContent>
                     <DialogActions sx={{pr: 4, pb: 4}}>
                         <Button type="submit" variant="contained"
                                 disabled={updateStatus === "pending"}

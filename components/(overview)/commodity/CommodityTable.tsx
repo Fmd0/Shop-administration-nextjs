@@ -1,27 +1,18 @@
 import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Button, Paper, Pagination } from "@mui/material";
-import {useCommodity} from "@/hooks/useCommodity";
 import {commodityType, CommodityType} from "@/utils/type";
 import {Dispatch, SetStateAction } from "react";
 
 
-const CommodityTable = ({handleUpdate, handleDelete, page, setPage, query}: {
+const CommodityTable = ({handleUpdate, handleDelete, page, setPage, data}: {
     handleUpdate: (data: CommodityType) => void,
     handleDelete: (data: CommodityType) => void,
     page: number,
     setPage: Dispatch<SetStateAction<number>>,
-    query: string,
+    data: {data: CommodityType[], totalPages: number},
 }) => {
 
 
-    const {data={msg:"", totalPages: 1, data:[]}, error} =
-        useCommodity(page, query);
 
-    if(error) {
-        return null;
-    }
-
-
-    // console.log(data);
 
     return (
         <>
@@ -45,7 +36,7 @@ const CommodityTable = ({handleUpdate, handleDelete, page, setPage, query}: {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {data.data.length !== 0 && data.data.map((data) => (
+                        {data.data?.length !== 0 && data.data?.map((data) => (
                             <TableRow key={data.name} sx={{
                                 '&:nth-of-type(odd)': {
                                     backgroundColor: "rgba(0, 0, 0, 0.04)",

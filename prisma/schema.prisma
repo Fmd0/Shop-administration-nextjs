@@ -38,6 +38,9 @@ model Market {
   shippingPolicy    String?
   commodities       Commodity[]
   marketTag         MarketTag?
+  comments          Comment[]
+
+  searchTag         Float[]
 
 
   createdAt         DateTime    @default(now())
@@ -56,6 +59,7 @@ model Commodity {
   description       String?
   stock             Float?
   selling           Float?
+  officialLink      String?
   tags              String[]
 
   market            Market?      @relation(fields: [marketId], references: [id])
@@ -63,6 +67,7 @@ model Commodity {
 
   skuConfigs        SkuConfig[]
   skuItems          SkuItem[]
+  comments          Comment[]
 
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
@@ -80,6 +85,9 @@ model SkuConfig {
   commodity         Commodity?  @relation(fields: [commodityId], references: [id])
   commodityId       String?     @db.ObjectId
 
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
   @@unique([key, commodityId])
 }
 
@@ -87,12 +95,17 @@ model SkuConfig {
 model SkuItem {
   id                String      @id @default(auto()) @map("_id") @db.ObjectId
   sku               Json
-  price             String
+  price             Float
+  promotingPrice    Float
   image             String?
-  stock             String
+  stock             Float
 
   commodity         Commodity?  @relation(fields: [commodityId], references: [id])
   commodityId       String?     @db.ObjectId
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
 
   @@unique([sku, commodityId])
 }
@@ -137,6 +150,37 @@ model MarketTag {
 
   market            Market      @relation(fields: [marketId], references: [id])
   marketId          String      @db.ObjectId @unique
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
+
+model Comment {
+  id                String      @id @default(auto()) @map("_id") @db.ObjectId
+  rating            Float
+  comment           String
+  userName          String
+
+  market            Market      @relation(fields: [marketId], references: [id])
+  marketId          String      @db.ObjectId
+
+  commodity         Commodity   @relation(fields: [commodityId], references: [id])
+  commodityId       String      @db.ObjectId
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
+
+model Category {
+  id                String      @id @default(auto()) @map("_id") @db.ObjectId
+  categoryId        Float       @unique
+  name              String      @unique
+
+  children          Category[]  @relation("Category")
+
+  parent            Category?   @relation("Category", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentId          String?     @db.ObjectId
+
 
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt

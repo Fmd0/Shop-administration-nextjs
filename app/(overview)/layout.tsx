@@ -1,11 +1,10 @@
 'use client'
 import {Breadcrumbs, Collapse, List, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
 import Image from "next/image";
-import {ExpandLess, ExpandMore, Home, ShoppingBag, Store} from "@mui/icons-material";
+import {ExpandLess, ExpandMore, Home, ShoppingBag, Store, ModeComment, Class, TurnedIn} from "@mui/icons-material";
 import React, {useState} from "react";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
-
 
 const Page = ({children}: {children: React.ReactNode}) => {
 
@@ -13,6 +12,8 @@ const Page = ({children}: {children: React.ReactNode}) => {
     const [marketOpen, setMarketOpen] = useState<boolean>(false);
     const [commodityOpen, setCommodityOpen] = useState<boolean>(false);
     const [skuOpen, setSkuOpen] = useState<boolean>(false);
+    const [commentOpen, setCommentOpen] = useState<boolean>(false);
+    const [categoryOpen, setCategoryOpen] = useState<boolean>(false);
 
     const pathname = usePathname();
     const pathArray = pathname.split("/");
@@ -96,7 +97,7 @@ const Page = ({children}: {children: React.ReactNode}) => {
 
                 {/*sku配置*/}
                 <ListItemButton onClick={() => setSkuOpen(m => !m)}>
-                    <ListItemIcon><ShoppingBag/></ListItemIcon>
+                    <ListItemIcon><TurnedIn/></ListItemIcon>
                     <ListItemText>Sku</ListItemText>
                     {skuOpen?<ExpandLess/> :<ExpandMore/>}
                 </ListItemButton>
@@ -114,6 +115,41 @@ const Page = ({children}: {children: React.ReactNode}) => {
                         </Link>
                     </List>
                 </Collapse>
+
+                {/*comment配置*/}
+                <ListItemButton onClick={() => setCommentOpen(m => !m)}>
+                    <ListItemIcon><ModeComment/></ListItemIcon>
+                    <ListItemText>Comment</ListItemText>
+                    {commentOpen?<ExpandLess/> :<ExpandMore/>}
+                </ListItemButton>
+                <Collapse in={commentOpen} timeout="auto" unmountOnExit>
+                    <List disablePadding>
+                        <Link href="/comment/info">
+                            <ListItemButton sx={{ pl: 4 }} selected={pathname==="/comment/info"}>
+                                <ListItemText inset primary="comment info" />
+                            </ListItemButton>
+                        </Link>
+                    </List>
+                </Collapse>
+
+
+                {/*category 配置*/}
+                <ListItemButton onClick={() => setCategoryOpen(!categoryOpen)}>
+                    <ListItemIcon><Class/></ListItemIcon>
+                    <ListItemText>Category</ListItemText>
+                    {categoryOpen?<ExpandLess/> :<ExpandMore/>}
+                </ListItemButton>
+                <Collapse in={categoryOpen} timeout="auto" unmountOnExit>
+                    <List disablePadding>
+                        <Link href="/category/config">
+                            <ListItemButton sx={{ pl: 4 }} selected={pathname==="/category/config"}>
+                                <ListItemText inset primary="category config" />
+                            </ListItemButton>
+                        </Link>
+                    </List>
+                </Collapse>
+
+
             </List>
 
 

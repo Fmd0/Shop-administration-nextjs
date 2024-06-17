@@ -118,10 +118,11 @@ const GET = async (req: Request) => {
         });
 
 
-        return Response.json({
-            msg: "Success",
-            totalPages,
-            data
+        return Response.json({msg: "Success", totalPages, data}, {
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Method": "GET",
+            }
         });
     }
     catch (error) {
