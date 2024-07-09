@@ -23,27 +23,35 @@ const GET = async(req: Request) => {
 
         let sortBy = "createdAt";
         let sort = "desc";
-        const sortByParam = searchParams.get("sortByParam");
-        if(sortByParam === "priceDesc") {
+        const sortByParam = searchParams.get("sortBy");
+        if(sortByParam === "newest") {
+            sort = "asc"
+        }
+        else if(sortByParam === "bestSelling") {
+            sortBy = "selling";
+            sort = "desc";
+        }
+        else if(sortByParam === "priceDesc") {
             sortBy = "price";
-            sortBy = "desc";
+            sort = "desc";
         }
         else if(sortByParam === "priceAsc") {
             sortBy = "price";
             sort = "asc";
         }
 
+
         let some = {};
-        const sizeParam = searchParams.get("size")||"";
-        const colorParam = searchParams.get("color")||"";
-        if(sizeParam !== "" && colorParam !== "") {
+        const sizeParam = searchParams.getAll("size");
+        const colorParam = searchParams.getAll("color");
+        if(sizeParam.length!==0 && colorParam.length !== 0) {
             some = {
                 AND: [
                     {
                         skuConfigs: {
                             some: {
                                 value: {
-                                    has: sizeParam,
+                                    hasSome: sizeParam,
                                 }
                             }
                         }
@@ -52,7 +60,7 @@ const GET = async(req: Request) => {
                         skuConfigs: {
                             some: {
                                 value: {
-                                    has: colorParam,
+                                    hasSome: colorParam,
                                 }
                             }
                         }
@@ -60,23 +68,23 @@ const GET = async(req: Request) => {
                 ]
             }
         }
-        else if(sizeParam !== "") {
+        else if(sizeParam.length!==0) {
             some = {
                 skuConfigs: {
                     some: {
                         value: {
-                            has: sizeParam
+                            hasSome: sizeParam
                         }
                     }
                 }
             }
         }
-        else if(colorParam !== "") {
+        else if(colorParam.length !== 0) {
             some = {
                 skuConfigs: {
                     some: {
                         value: {
-                            has: colorParam
+                            hasSome: colorParam
                         }
                     }
                 }
@@ -87,37 +95,49 @@ const GET = async(req: Request) => {
         const {_count: totalAmount} = await prisma.commodity.aggregate({
             where: {
                 name: {
-                    contains: query
+                    contains: query,
+                    mode: "insensitive",
                 },
                 ...onSale,
-                // rating: {
-                //     gt: rating,
-                // },
-                price: {
-                    gte: startPrice,
-                    lte: endPrice,
+                rating: {
+                    gte: rating,
                 },
-                ...some
-            },
-            _count: true,
-        })
-        const totalPages = Math.ceil(totalAmount / pageSize);
-
-        const data = await prisma.commodity.findMany({
-            where: {
-                name: {
-                    contains: query
-                },
-                ...onSale,
-                // rating: {
-                //     gt: rating,
-                // },
                 price: {
                     gte: startPrice,
                     lte: endPrice,
                 },
                 ...some,
+            },
+            _count: true,
+        })
+        const totalPages = Math.ceil(totalAmount / pageSize);
+        const hasMore = totalAmount> page*pageSize;
+        console.log(totalAmount);
 
+        const data = await prisma.commodity.findMany({
+            select: {
+                id: true,
+                name: true,
+                images: true,
+                rating: true,
+                ratingAmount: true,
+                price: true,
+                promotingPrice: true,
+            },
+            where: {
+                name: {
+                    contains: query,
+                    mode: "insensitive",
+                },
+                ...onSale,
+                rating: {
+                    gte: rating,
+                },
+                price: {
+                    gte: startPrice,
+                    lte: endPrice,
+                },
+                ...some,
             },
             orderBy: {
               [sortBy]: sort,
@@ -126,7 +146,12 @@ const GET = async(req: Request) => {
             take: pageSize,
         })
 
-        return Response.json({msg: "Success", totalPages, totalAmount, data});
+        return Response.json({msg: "Success", totalPages, hasMore, totalAmount, data}, {
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Method": "GET",
+            }
+        });
     }
     catch(err) {
         console.log(err);

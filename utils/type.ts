@@ -33,7 +33,7 @@ export interface CommodityType {
     price: number,
     promotingPrice?: number,
     images: string[],
-    rating?: string,
+    rating?: number,
     ratingAmount?: string,
     description?: string,
     stock?: number,

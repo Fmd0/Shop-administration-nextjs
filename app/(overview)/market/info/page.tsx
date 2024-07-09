@@ -321,7 +321,7 @@ const Page = () => {
                         </Collapse>
                         <DialogContent>
                             <div className="grid grid-cols-3 gap-8 p-4">
-                                <TextField variant="outlined" size="small" name="Name" label="name" required id="name"/>
+                                <TextField variant="outlined" size="small" name="name" label="name" required id="name"/>
                                 <OptionalImageItem initialUrl="" inputName="icon"/>
                                 <OptionalImageItem initialUrl="" inputName="bigLogo"/>
                                 <OptionalImageItem initialUrl="" inputName="bigPic"/>

@@ -69,7 +69,7 @@ const GET = async(req: NextRequest) => {
                 commodityId: true,
             },
             orderBy: {
-                createdAt: "asc",
+                createdAt: "desc",
             },
             skip: (page - 1) * pageSize,
             take: pageSize,

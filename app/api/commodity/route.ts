@@ -9,7 +9,7 @@ const CommoditySchema = z.object({
     price: z.coerce.number(),
     promotingPrice: z.coerce.number(),
     images: z.array(z.string()),
-    rating: z.string(),
+    rating: z.coerce.number(),
     ratingAmount: z.string(),
     description: z.string(),
     stock: z.coerce.number(),

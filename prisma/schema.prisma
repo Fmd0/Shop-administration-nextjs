@@ -54,7 +54,7 @@ model Commodity {
   price             Float
   promotingPrice    Float?
   images            String[]
-  rating            String?
+  rating            Float?
   ratingAmount      String?
   description       String?
   stock             Float?

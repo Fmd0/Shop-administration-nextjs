@@ -34,9 +34,16 @@ const GetHomeBannerSchema = z.object({
 const GET = async(req: Request) => {
     try {
         const pageSize = 6;
-        const url = new URL(req.url);
-        const urlParams = new URLSearchParams(url.search);
+        const urlParams = new URLSearchParams(new URL(req.url).search);
         const page = Number(urlParams.get("page") || 1);
+
+        let skip = {};
+        let take = {};
+        const getAll = urlParams.get("getAll") || "";
+        if(getAll === "") {
+            skip = {skip : (page-1)*pageSize};
+            take = {take: pageSize}
+        }
 
         let filterObj = {};
         const parseResult =
@@ -60,17 +67,29 @@ const GET = async(req: Request) => {
         const totalPages = Math.ceil(count / pageSize);
 
         const data = await prisma.homeBanner.findMany({
-            skip: (page - 1) * pageSize,
-            take: pageSize,
+            ...skip,
+            ...take,
             orderBy: {
-                createdAt: "desc"
+                createdAt: "asc"
             },
             where: {
                 ...filterObj
+            },
+            select: {
+                id: true,
+                relativeId: true,
+                image: true,
+                logo: true,
+                isCommodity: true,
+                row: true,
             }
         });
 
-        return Response.json({msg: "success", totalPages, data});
+        return Response.json({msg: "success", totalPages, data}, {
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+            }
+        });
     }
     catch (error) {
         console.error(error);

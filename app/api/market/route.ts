@@ -141,7 +141,7 @@ const POST = async (req: NextRequest) => {
         // 上传图片前 先用zod做一次解析
         const formData = await req.formData();
 
-
+        // console.log(Object.fromEntries(formData.entries()));
         let parseResult =
             createFormSchema.safeParse(Object.fromEntries(formData.entries()));
         if (!parseResult.success) {

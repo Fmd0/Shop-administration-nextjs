@@ -120,7 +120,6 @@ const Page = () => {
         return null;
     }
 
-    console.log(filterRow);
     return (
         <>
             <div className="relative flex justify-between mb-4">
@@ -197,32 +196,30 @@ const Page = () => {
                                     <Button onClick={() => handleClickDelete(data)}>Delete</Button>
                                 </TableCell>
 
-                                {
-                                    Object.entries(data).map(([k,v]) => {
-                                        if (k === "id" || k === "createdAt" || k === "updatedAt") {
-                                            return null;
-                                        } else if(k === "image" || k==="logo") {
-                                            return (
-                                                <TableCell key={k} align="center">
-                                                    {v&&<img src={v} alt="logo" className="max-w-12 max-h-12"/>}
-                                                </TableCell>
-                                            )
-                                        } else if(k === "isCommodity") {
-                                            return (
-                                                <TableCell key={k} align="center" >
-                                                    {
-                                                        String(v)
-                                                    }
-                                                </TableCell>)
-                                        }
-                                        return (
-                                            <TableCell key={k} align="center" >
-                                                {
-                                                    v&&(v.length>20 ? `${v.slice(0, 20)}...` : v)
-                                                }
-                                            </TableCell>)
-                                    })
-                                }
+                                <TableCell align="center">
+                                    <div className="grid place-items-center">
+                                        {data.image&&<img src={data.image} alt="logo" className="max-w-12 max-h-12"/>}
+                                    </div>
+                                </TableCell>
+
+                                <TableCell align="center">
+                                    <div className="grid place-items-center">
+                                        {data.logo && <img src={data.logo} alt="logo" className="max-w-12 max-h-12"/>}
+                                    </div>
+                                </TableCell>
+
+                                <TableCell align="center">
+                                {String(data?.isCommodity)}
+                                </TableCell>
+
+                                <TableCell align="center" >
+                                    {data?.row}
+                                </TableCell>
+
+                                <TableCell align="center" >
+                                    {data?.relativeId}
+                                </TableCell>
+
                             </TableRow>
                         ))}
                     </TableBody>
